@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>APEX SMART APARTMENT MASTER OS</title>
+    <style>
+        :root { --bg: #05070a; --panel: #0b0f17; --border: #1f293d; --blue: #00f0ff; --green: #39ff14; --red: #ff3131; }
+        body { background: var(--bg); color: #94a3b8; font-family: monospace; padding: 20px; }
+        .terminal { background: var(--panel); border: 2px solid var(--border); border-radius: 12px; max-width: 700px; margin: auto; box-shadow: 0 0 25px rgba(0,240,255,0.15); }
+        .bar { background: #111827; padding: 12px; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; color: var(--blue); }
+        .hud { display: flex; justify-content: space-between; padding: 15px; background: #070a12; border-bottom: 1px solid var(--border); }
+        .card { background: rgba(31,41,55,0.4); border: 1px solid var(--border); padding: 10px; border-radius: 6px; width: 45%; }
+        .screen { padding: 20px; min-height: 250px; background: #090d16; line-height: 1.6; font-size: 15px; }
+        .control { background: var(--panel); padding: 15px; border-top: 2px solid var(--border); display: flex; }
+        input { background: transparent; border: none; color: #fff; font-family: inherit; font-size: 16px; flex-grow: 1; outline: none; }
+        .c-blue { color: var(--blue); text-shadow: 0 0 5px rgba(0,240,255,0.3); }
+        .c-green { color: var(--green); text-shadow: 0 0 5px rgba(57,255,20,0.3); }
+        .c-red { color: var(--red); text-shadow: 0 0 5px rgba(255,49,49,0.3); }
+    </style>
+</head>
+<body>
+<div class="terminal">
+    <div class="bar"><span>MAIN TERMINAL NODE // OS-8</span> <span class="c-blue">SECURE APARTMENT INTERFACE</span></div>
+    <div class="hud">
+        <div class="card"><div>RESIDENT</div><div class="c-blue">Hunter J. Anderson</div></div>
+        <div class="card"><div>CARD WALLET</div><div class="c-green" id="wallet">\$1,130.00</div></div>
+    </div>
+    <div class="screen" id="screen">
+        <div class="c-blue">=== APEX NETWORK HUB ONLINE ===</div>
+        <div style="margin-top: 10px;">Type <span class="c-green">// boot</span> to authorize your standalone smart residential core...</div>
+    </div>
+    <div class="control">
+        <span class="c-green" style="margin-right: 10px; font-weight: bold;">anderson-hub#</span>
+        <input type="text" id="input" autofocus autocomplete="off">
+    </div>
+</div>
+<script>
+    let bal = 1130.00, systemOn = false, jobType = null, target = "";
+    const screen = document.getElementById('screen'), wallet = document.getElementById('wallet'), input = document.getElementById('input');
+
+    function beep(type) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator(), gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            if (type === 'click') { osc.frequency.setValueAtTime(600, ctx.currentTime); gain.gain.setValueAtTime(0.05, ctx.currentTime); osc.start(); osc.stop(ctx.currentTime + 0.05); }
+            else if (type === 'win') { osc.frequency.setValueAtTime(523, ctx.currentTime); osc.frequency.setValueAtTime(659, ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.start(); osc.stop(ctx.currentTime + 0.3); }
+            else if (type === 'err') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(130, ctx.currentTime); gain.gain.setValueAtTime(0.1, ctx.currentTime); osc.start(); osc.stop(ctx.currentTime + 0.2); }
+        } catch(e) {}
+    }
+
+    const menus = {
+        main: `⚡ <span class="c-blue">APEX DIGITAL ADULT PORTAL SYSTEM</span>\n=========================================\n<span class="c-green">/bank</span>       -> Check active card account ledger\n<span class="c-green">/bank_pay</span>   -> Open smart utility billing system\n<span class="c-green">/work</span>       -> Open a new randomized IT contract\n<span class="c-green">/store</span>      -> Order delivery snacks & office gear\n<span class="c-red">/power off</span>  -> Log out and encrypt account metrics`,
+        bank: `📊 <span class="c-blue">BANK OF APEX // ACCOUNT LEDGER</span>\n-----------------------------------------\n* INITIAL SETUP BONUS ..... +$1000.00\n* DIAGNOSTIC PAYOUTS ...... +$130.00\n\nType <span class="c-blue">/boot</span> to return to the core deck.`,
+        bank_pay: `🔌 <span class="c-red">SMART BUILDING OVERHEAD GATEWAY</span>\n-----------------------------------------\n* Smart Bedroom LED Grid Usage ...... $15.00\n* High-Speed Wi-Fi Data Pipelines ... $20.00\nTOTAL OUTSTANDING INVOICE: $35.00\n\nType <span class="c-green">pay</span> to swipe card, or <span class="c-blue">/boot</span> to exit.`,
+        store: `🍔 <span class="c-green">APARTMENT PROVISIONS DEPOT</span>\n-----------------------------------------\n* A1: Premium Drink Can Restock ...... $10.00\n* A2: Lounge Munchies Snack Basket ... $15.00\n* G1: Dual Curved Horizon Monitors ... $150.00\n\nInput item code (<span class="c-green">A1</span>, <span class="c-green">A2</span>, or <span class="c-green">G1</span>) to purchase, or <span class="c-blue">/boot</span> to leave.`
+    };
+
+    const jobs = [
+        { q: 'Fix typo: "Please verify your computre security."', a: 'computer', r: 20 },
+        { q: 'Fix typo: "The network serverr is experiencing lag."', a: 'server', r: 20 },
+        { q: 'Fix typo: "Ensure your appartment lights are online."', a: 'apartment', r: 20 },
+        { q: 'Reset checkout lasers. Type the sound token: "beep"', a: 'beep', r: 50 },
+        { q: 'Reset scanner grid firmware. Type the sound token: "ping"', a: 'ping', r: 50 }
+    ];
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') { if (e.key.length === 1) beep('click'); return; }
+        let cmd = input.value.trim().toLowerCase(); input.value = '';
+
+        if (['// boot', '//boot', '/boot', 'boot'].includes(cmd)) { systemOn = true; jobType = null; beep('win'); screen.innerHTML = menus.main; return; }
+        if (!systemOn) { beep('err'); screen.innerHTML = `<span class="c-red">SECURITY DENIED.</span> Type <span class="c-green">// boot</span> to clear firewall.`; return; }
+        if (['/power off', 'power off', '/poweroff'].includes(cmd)) { systemOn = false; beep('err'); screen.innerHTML = `<span class="c-red">TERMINAL DISCONNECTED.</span>\n\ntype // boot to begin`; return; }
+
+        if (cmd === 'work' || cmd === '/work') {
+            beep('win'); let j = jobs[Math.floor(Math.random() * jobs.length)];
+            jobType = j; target = j.a;
+            screen.innerHTML = `💻 <span class="c-blue">ACTIVE IT SUPPORT CONTRACT</span>\n-----------------------------------------\n* INSTRUCTION: ${j.q}\n\nType your answer below to claim <span class="c-green">$${j.r}.00</span>, or type <span class="c-blue">/boot</span> to cancel.`;
+            return;
+        }
+
+        let clean = cmd.replace('/', '');
+        if (menus[clean]) { beep('win'); screen.innerHTML = menus[clean]; jobType = null; return; }
+
+        if (jobType && cmd === target) {
+            bal += jobType.r; wallet.textContent = `$${bal.toFixed(2)}`; let earned = jobType.r; jobType = null; beep('win');
+            screen.innerHTML = `<span class="c-green">√ CONFIRMED: Contract closed successfully. +$${earned}.00 added!</span>\n\n` + menus.main; return;
+        }
+        if (screen.innerHTML.includes('SMART BUILDING') && cmd === 'pay') {
+            if (bal >= 35) { bal -= 35; wallet.textContent = `$${bal.toFixed(2)}`; beep('win'); screen.innerHTML = `<span class="c-green">√ PAID: Utility cleared. -$35.00</span>\n\n` + menus.main; }
+            else { beep('err'); screen.innerHTML = `<span class="c-red">DENIED: Low balance.</span>\n\n` + menus.main; } return;
+        }
+        if (screen.innerHTML.includes('APARTMENT PROVISIONS')) {
+            let p = { a1: 10, a2: 15, g1: 150 };
+            if (p[cmd]) {
+                if (bal >= p[cmd]) { bal -= p[cmd]; wallet.textContent = `$${bal.toFixed(2)}`; beep('win'); screen.innerHTML = `<span class="c-green">√ ORDER DISPATCHED. -$${p[cmd]}.00</span>\n\n` + menus.main; }
+                else { beep('err'); screen.innerHTML = `<span class="c-red">DENIED: Low balance.</span>\n\n` + menus.main; } return;
+            }
+        }
+        beep('err'); screen.innerHTML = `<span class="c-red">SYNTAX ERROR.</span> Type <span class="c-blue">/boot</span> for index.`;
+    });
+</script>
+</body>
+</html>
